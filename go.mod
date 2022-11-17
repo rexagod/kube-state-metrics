@@ -20,11 +20,12 @@ require (
 	github.com/stretchr/testify v1.8.1
 	golang.org/x/perf v0.0.0-20220920022801-e8d778a60d07
 	gopkg.in/yaml.v3 v3.0.1
-	k8s.io/api v0.25.3
-	k8s.io/apimachinery v0.25.3
+	k8s.io/api v0.25.4
+	k8s.io/apiextensions-apiserver v0.25.4
+	k8s.io/apimachinery v0.25.4
 	k8s.io/autoscaler/vertical-pod-autoscaler v0.12.0
-	k8s.io/client-go v0.25.3
-	k8s.io/component-base v0.25.3
+	k8s.io/client-go v0.25.4
+	k8s.io/component-base v0.25.4
 	k8s.io/klog/v2 v2.80.1
 	k8s.io/sample-controller v0.25.3
 	k8s.io/utils v0.0.0-20221101230645-61b03e2f6476

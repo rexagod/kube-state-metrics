@@ -36,6 +36,7 @@ import (
 	policyv1 "k8s.io/api/policy/v1"
 	rbacv1 "k8s.io/api/rbac/v1"
 	storagev1 "k8s.io/api/storage/v1"
+	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	vpaautoscaling "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/apis/autoscaling.k8s.io/v1beta2"
 	vpaclientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
@@ -72,6 +73,7 @@ type Builder struct {
 	shard                         int32
 	totalShards                   int
 	buildStoresFunc               ksmtypes.BuildStoresFunc
+	buildCustomStoresFunc         ksmtypes.BuildCustomStoresFunc
 	buildCustomResourceStoresFunc ksmtypes.BuildCustomResourceStoresFunc
 	allowAnnotationsList          map[string][]string
 	allowLabelsList               map[string][]string
@@ -290,6 +292,7 @@ var availableStores = map[string]func(f *Builder) []cache.Store{
 	"configmaps":                      func(b *Builder) []cache.Store { return b.buildConfigMapStores() },
 	"clusterrolebindings":             func(b *Builder) []cache.Store { return b.buildClusterRoleBindingStores() },
 	"cronjobs":                        func(b *Builder) []cache.Store { return b.buildCronJobStores() },
+	"customresourcedefinitions":       func(b *Builder) []cache.Store { return b.buildCustomResourceDefinitionStores() },
 	"daemonsets":                      func(b *Builder) []cache.Store { return b.buildDaemonSetStores() },
 	"deployments":                     func(b *Builder) []cache.Store { return b.buildDeploymentStores() },
 	"endpoints":                       func(b *Builder) []cache.Store { return b.buildEndpointsStores() },
@@ -332,6 +335,10 @@ func availableResources() []string {
 		c = append(c, name)
 	}
 	return c
+}
+
+func (b *Builder) buildCustomResourceDefinitionStores() []cache.Store {
+	return b.buildCustomStoresFunc(customResourceDefinitionMetricFamilies(), &apiextensionsv1.CustomResourceDefinition{}, createCustomResourceDefinitionListWatch, b.useAPIServerCache)
 }
 
 func (b *Builder) buildConfigMapStores() []cache.Store {

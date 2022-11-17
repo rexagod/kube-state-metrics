@@ -35,6 +35,7 @@ See each file for specific documentation about the exposed metrics:
 - [CertificateSigningRequest Metrics](certificatesigningrequest-metrics.md)
 - [ConfigMap Metrics](configmap-metrics.md)
 - [CronJob Metrics](cronjob-metrics.md)
+- [CustomResourceDefinition Metrics](customresourcedefinition-metrics.md)
 - [DaemonSet Metrics](daemonset-metrics.md)
 - [Deployment Metrics](deployment-metrics.md)
 - [Endpoint Metrics](endpoint-metrics.md)
