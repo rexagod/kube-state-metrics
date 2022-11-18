@@ -181,6 +181,7 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options, factories .
 
 	storeBuilder.WithUsingAPIServerCache(opts.UseAPIServerCache)
 	storeBuilder.WithGenerateStoresFunc(storeBuilder.DefaultGenerateStoresFunc())
+	storeBuilder.WithGenerateCustomStoresFunc(storeBuilder.DefaultGenerateCustomStoresFunc())
 	storeBuilder.WithGenerateCustomResourceStoresFunc(storeBuilder.DefaultGenerateCustomResourceStoresFunc())
 
 	proc.StartReaper()

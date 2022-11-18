@@ -22,7 +22,7 @@ import (
 	metricsstore "k8s.io/kube-state-metrics/v2/pkg/metrics_store"
 
 	"github.com/prometheus/client_golang/prometheus"
-	apiextclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	apiextensionsclientset "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	vpaclientset "k8s.io/autoscaler/vertical-pod-autoscaler/pkg/client/clientset/versioned"
 	clientset "k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
@@ -66,7 +66,7 @@ type BuildStoresFunc func(metricFamilies []generator.FamilyGenerator,
 // BuildCustomStoresFunc function signature that is used to return a list of cache.Store
 type BuildCustomStoresFunc func(metricFamilies []generator.FamilyGenerator,
 	expectedType interface{},
-	listWatchFunc func(kubeClient apiextclientset.Interface, ns string, fieldSelector string) cache.ListerWatcher,
+	listWatchFunc func(kubeClient apiextensionsclientset.Interface, ns string, fieldSelector string) cache.ListerWatcher,
 	useAPIServerCache bool,
 ) []cache.Store
 
