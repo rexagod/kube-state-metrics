@@ -115,11 +115,6 @@ func (b *Builder) WithGenerateStoresFunc(f ksmtypes.BuildStoresFunc) {
 	b.internal.WithGenerateStoresFunc(f)
 }
 
-// WithGenerateCustomResourceStoresFunc configures a custom generate custom resource store function
-func (b *Builder) WithGenerateCustomResourceStoresFunc(f ksmtypes.BuildCustomResourceStoresFunc) {
-	b.internal.WithGenerateCustomResourceStoresFunc(f)
-}
-
 // DefaultGenerateStoresFunc returns default buildStore function
 func (b *Builder) DefaultGenerateStoresFunc() ksmtypes.BuildStoresFunc {
 	return b.internal.DefaultGenerateStoresFunc()

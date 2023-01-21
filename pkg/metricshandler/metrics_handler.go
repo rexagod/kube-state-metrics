@@ -98,6 +98,7 @@ func (m *MetricsHandler) Run(ctx context.Context) error {
 	if !autoSharding {
 		klog.InfoS("Autosharding disabled")
 		m.ConfigureSharding(ctx, m.opts.Shard, m.opts.TotalShards)
+		// Wait for context to be done, metrics will be served until then.
 		<-ctx.Done()
 		return ctx.Err()
 	}

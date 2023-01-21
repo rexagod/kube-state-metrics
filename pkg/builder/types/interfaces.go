@@ -45,7 +45,6 @@ type BuilderInterface interface {
 	WithAllowAnnotations(a map[string][]string)
 	WithAllowLabels(l map[string][]string) error
 	WithGenerateStoresFunc(f BuildStoresFunc)
-	WithGenerateCustomResourceStoresFunc(f BuildCustomResourceStoresFunc)
 	DefaultGenerateStoresFunc() BuildStoresFunc
 	DefaultGenerateCustomResourceStoresFunc() BuildCustomResourceStoresFunc
 	WithCustomResourceStoreFactories(fs ...customresource.RegistryFactory)
