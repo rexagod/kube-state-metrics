@@ -337,7 +337,10 @@ func (b *Builder) buildDaemonSetStores() []cache.Store {
 }
 
 func (b *Builder) buildDeploymentStores() []cache.Store {
-	return b.buildStoresFunc(deploymentMetricFamilies(b.allowAnnotationsList["deployments"], b.allowLabelsList["deployments"]), &appsv1.Deployment{}, createDeploymentListWatch, b.useAPIServerCache)
+	dc := deploymentCollectorFromPluginWrapper(b.allowAnnotationsList["deployments"], b.allowLabelsList["deployments"])
+	fmt.Println("dc", dc)
+	dcOrig := deploymentMetricFamilies(b.allowAnnotationsList["deployments"], b.allowLabelsList["deployments"])
+	return b.buildStoresFunc(dcOrig, &appsv1.Deployment{}, createDeploymentListWatch, b.useAPIServerCache)
 }
 
 func (b *Builder) buildEndpointsStores() []cache.Store {
