@@ -14,6 +14,7 @@ limitations under the License.
 package discovery
 
 import (
+	"fmt"
 	"sync"
 
 	"k8s.io/apimachinery/pkg/runtime/schema"
@@ -25,7 +26,7 @@ type groupVersionKindPlural struct {
 }
 
 func (g groupVersionKindPlural) String() string {
-	return g.Group + "/" + g.Version + ", Kind=" + g.Kind + ", Plural=" + g.Plural
+	return fmt.Sprintf("%s/%s, Kind=%s, Plural=%s", g.Group, g.Version, g.Kind, g.Plural)
 }
 
 type kindPlural struct {
