@@ -187,7 +187,7 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 		// enable custom resource only
 		klog.InfoS("Used CRD resources only", "resources", resources)
 	default:
-		resources = append(resources, opts.Resources.AsSlice()...)
+		resources = opts.Resources.AsSlice()
 		klog.InfoS("Used resources", "resources", resources)
 	}
 
