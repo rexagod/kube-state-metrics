@@ -482,6 +482,9 @@ Examples:
 
 # if the value to be matched is a number or boolean, the value is compared as a number or boolean  
 [status, conditions, "[value=66]", name]  # status.conditions[1].name = "b"
+
+# expand a list
+[spec, order, "*", value] # spec.order[*].value = true
 ```
 
 ### Wildcard matching of version and kind fields
