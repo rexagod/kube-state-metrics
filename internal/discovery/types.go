@@ -17,6 +17,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 )
 
@@ -42,12 +43,12 @@ type CRDiscoverer struct {
 	Map map[string]map[string][]kindPlural
 	// ShouldUpdate is a flag that indicates whether the cache was updated.
 	WasUpdated bool
-	// CRDsAddEvents is the number of times that the CRD informer triggered the "add" event.
-	CRDsAddEvents uint
-	// CRDsDeleteEvents is the number of times that the CRD informer triggered the "remove" event.
-	CRDsDeleteEvents uint
-	// CRDsCacheCount is the net amount of CRDs affecting the cache at this point.
-	CRDsCacheCount uint
+	// CRDsAddEventsCounter tracks the number of times that the CRD informer triggered the "add" event.
+	CRDsAddEventsCounter prometheus.Counter
+	// CRDsDeleteEventsCounter tracks the number of times that the CRD informer triggered the "remove" event.
+	CRDsDeleteEventsCounter prometheus.Counter
+	// CRDsCacheCountGauge tracks the net amount of CRDs affecting the cache at this point.
+	CRDsCacheCountGauge prometheus.Gauge
 }
 
 // SafeRead executes the given function while holding a read lock.

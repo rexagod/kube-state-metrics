@@ -482,7 +482,7 @@ Examples:
 [status, conditions, "[value=66]", name]  # status.conditions[1].name = "b"
 ```
 
-### Wildcard VKs
+### Wildcard matching of version and kind fields
 
 The CRS configuration also allows you to monitor all versions and/or kinds that come under a group. It watches
 the installed CRDs for this purpose. Taking the aforementioned `Foo` object as reference, the configuration below allows

@@ -68,13 +68,11 @@ func (r *CRDiscoverer) StartDiscovery(ctx context.Context, config *rest.Config) 
 				r.SafeWrite(func() {
 					r.WasUpdated = true
 				})
-				klog.InfoS("added CRD for GVK", "group", g, "version", v, "kind", k)
 			}
 			r.SafeWrite(func() {
-				r.CRDsAddEvents++
-				r.CRDsCacheCount++
+				r.CRDsAddEventsCounter.Inc()
+				r.CRDsCacheCountGauge.Inc()
 			})
-			klog.InfoS("added CRD", "total add events", r.CRDsAddEvents, "total number of CRDs affecting cache", r.CRDsCacheCount)
 		},
 		DeleteFunc: func(obj interface{}) {
 			objSpec := obj.(*unstructured.Unstructured).Object["spec"].(map[string]interface{})
@@ -95,13 +93,11 @@ func (r *CRDiscoverer) StartDiscovery(ctx context.Context, config *rest.Config) 
 				r.SafeWrite(func() {
 					r.WasUpdated = true
 				})
-				klog.InfoS("removed CRD for GVK", "group", g, "version", v, "kind", k)
 			}
 			r.SafeWrite(func() {
-				r.CRDsDeleteEvents++
-				r.CRDsCacheCount--
+				r.CRDsDeleteEventsCounter.Inc()
+				r.CRDsCacheCountGauge.Dec()
 			})
-			klog.InfoS("removed CRD", "total delete events", r.CRDsDeleteEvents, "total number of CRDs affecting cache", r.CRDsCacheCount)
 		},
 	})
 	if err != nil {

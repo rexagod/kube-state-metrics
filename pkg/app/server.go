@@ -114,6 +114,19 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 			Help: "Timestamp of the last successful configuration reload.",
 		}, []string{"type", "filename"})
 
+	// Register self-metrics to track the state of the cache.
+	crdsAddEventsCounter := promauto.With(ksmMetricsRegistry).NewCounter(prometheus.CounterOpts{
+		Name: "kube_state_metrics_crds_add_events_total",
+		Help: "Number of times that the CRD informer triggered the add event.",
+	})
+	crdsDeleteEventsCounter := promauto.With(ksmMetricsRegistry).NewCounter(prometheus.CounterOpts{
+		Name: "kube_state_metrics_crds_delete_events_total",
+		Help: "Number of times that the CRD informer triggered the remove event.",
+	})
+	crdsCacheCountGauge := promauto.With(ksmMetricsRegistry).NewGauge(prometheus.GaugeOpts{
+		Name: "kube_state_metrics_crds_cache",
+		Help: "Net amount of CRDs affecting the cache currently.",
+	})
 	storeBuilder := store.NewBuilder()
 	storeBuilder.WithMetrics(ksmMetricsRegistry)
 
@@ -272,7 +285,11 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 
 	// A nil CRS config implies that we need to hold off on all CRS operations.
 	if config != nil {
-		discovererInstance := &discovery.CRDiscoverer{}
+		discovererInstance := &discovery.CRDiscoverer{
+			CRDsAddEventsCounter:    crdsAddEventsCounter,
+			CRDsDeleteEventsCounter: crdsDeleteEventsCounter,
+			CRDsCacheCountGauge:     crdsCacheCountGauge,
+		}
 		// This starts a goroutine that will watch for any new GVKs to extract from CRDs.
 		err = discovererInstance.StartDiscovery(ctx, kubeConfig)
 		if err != nil {
