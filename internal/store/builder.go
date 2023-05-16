@@ -56,6 +56,12 @@ import (
 	"k8s.io/kube-state-metrics/v2/pkg/watch"
 )
 
+// ResourceDiscoveryTimeout is the timeout for the resource discovery.
+const ResourceDiscoveryTimeout = 10 * time.Second
+
+// ResourceDiscoveryInterval is the interval for the resource discovery.
+const ResourceDiscoveryInterval = 100 * time.Millisecond
+
 // Make sure the internal Builder implements the public BuilderInterface.
 // New Builder methods should be added to the public BuilderInterface.
 var _ ksmtypes.BuilderInterface = &Builder{}
@@ -611,8 +617,8 @@ func (b *Builder) hasResources(resourceName string, expectedType interface{}) bo
 		return false
 	}
 	// Wait for the resource to come up.
-	timer := time.NewTimer(10 * time.Second)
-	ticker := time.NewTicker(100 * time.Millisecond)
+	timer := time.NewTimer(ResourceDiscoveryTimeout)
+	ticker := time.NewTicker(ResourceDiscoveryInterval)
 	dynamicClient, err := util.CreateDynamicClient(b.utilOptions.Apiserver, b.utilOptions.Kubeconfig)
 	if err != nil {
 		klog.ErrorS(err, "Failed to create dynamic client")

@@ -116,15 +116,15 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 
 	// Register self-metrics to track the state of the cache.
 	crdsAddEventsCounter := promauto.With(ksmMetricsRegistry).NewCounter(prometheus.CounterOpts{
-		Name: "kube_state_metrics_crds_add_events_total",
+		Name: "kube_state_metrics_custom_resource_state_add_events_total",
 		Help: "Number of times that the CRD informer triggered the add event.",
 	})
 	crdsDeleteEventsCounter := promauto.With(ksmMetricsRegistry).NewCounter(prometheus.CounterOpts{
-		Name: "kube_state_metrics_crds_delete_events_total",
+		Name: "kube_state_metrics_custom_resource_state_delete_events_total",
 		Help: "Number of times that the CRD informer triggered the remove event.",
 	})
 	crdsCacheCountGauge := promauto.With(ksmMetricsRegistry).NewGauge(prometheus.GaugeOpts{
-		Name: "kube_state_metrics_crds_cache",
+		Name: "kube_state_metrics_custom_resource_state_cache",
 		Help: "Net amount of CRDs affecting the cache currently.",
 	})
 	storeBuilder := store.NewBuilder()
