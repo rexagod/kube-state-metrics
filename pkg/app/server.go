@@ -240,9 +240,6 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 
 	storeBuilder.WithUsingAPIServerCache(opts.UseAPIServerCache)
 	storeBuilder.WithGenerateStoresFunc(storeBuilder.DefaultGenerateStoresFunc())
-	if config != nil {
-		storeBuilder.WithGenerateCustomResourceStoresFunc(storeBuilder.DefaultGenerateCustomResourceStoresFunc())
-	}
 	proc.StartReaper()
 
 	storeBuilder.WithUtilOptions(opts)

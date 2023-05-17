@@ -50,6 +50,7 @@ type BuilderInterface interface {
 	WithCustomResourceStoreFactories(fs ...customresource.RegistryFactory)
 	Build() metricsstore.MetricsWriterList
 	BuildStores() [][]cache.Store
+	WithGenerateCustomResourceStoresFunc(f BuildCustomResourceStoresFunc)
 }
 
 // BuildStoresFunc function signature that is used to return a list of cache.Store

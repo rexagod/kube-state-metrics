@@ -141,3 +141,8 @@ func (b *Builder) Build() metricsstore.MetricsWriterList {
 func (b *Builder) BuildStores() [][]cache.Store {
 	return b.internal.BuildStores()
 }
+
+// WithGenerateCustomResourceStoresFunc configures a custom generate custom resource store function
+func (b *Builder) WithGenerateCustomResourceStoresFunc(f ksmtypes.BuildCustomResourceStoresFunc) {
+	b.internal.WithGenerateCustomResourceStoresFunc(f)
+}
