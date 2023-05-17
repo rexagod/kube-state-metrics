@@ -537,7 +537,9 @@ func (b *Builder) buildStores(
 // lastMetricFamily is used to compare the metric families between two family generations.
 var lastMetricFamily []generator.FamilyGenerator
 
-// TODO(Garrybest): Merge `buildStores` and `buildCustomResourceStores`
+// compareToLastMetricFamily compares the metric families between two consecutive family generations, only for CRS,
+// and allows two family generations to be the same only if they have the same metric family names,
+// while grouping the metrics under that name, thus conforming with OpenMetrics standards.
 func compareToLastMetricFamily(metricFamilies []generator.FamilyGenerator) bool {
 	if len(lastMetricFamily) != len(metricFamilies) {
 		return false
@@ -550,6 +552,7 @@ func compareToLastMetricFamily(metricFamilies []generator.FamilyGenerator) bool 
 	return true
 }
 
+// TODO(Garrybest): Merge `buildStores` and `buildCustomResourceStores`
 func (b *Builder) buildCustomResourceStores(resourceName string,
 	metricFamilies []generator.FamilyGenerator,
 	expectedType interface{},
