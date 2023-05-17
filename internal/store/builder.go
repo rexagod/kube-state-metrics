@@ -534,7 +534,22 @@ func (b *Builder) buildStores(
 	return stores
 }
 
+// lastMetricFamily is used to compare the metric families between two family generations.
+var lastMetricFamily []generator.FamilyGenerator
+
 // TODO(Garrybest): Merge `buildStores` and `buildCustomResourceStores`
+func compareToLastMetricFamily(metricFamilies []generator.FamilyGenerator) bool {
+	if len(lastMetricFamily) != len(metricFamilies) {
+		return false
+	}
+	for i := range lastMetricFamily {
+		if lastMetricFamily[i].Name != metricFamilies[i].Name {
+			return false
+		}
+	}
+	return true
+}
+
 func (b *Builder) buildCustomResourceStores(resourceName string,
 	metricFamilies []generator.FamilyGenerator,
 	expectedType interface{},
@@ -546,7 +561,10 @@ func (b *Builder) buildCustomResourceStores(resourceName string,
 
 	var familyHeaders []string
 	if b.hasResources(resourceName, expectedType) {
-		familyHeaders = generator.ExtractMetricFamilyHeaders(metricFamilies)
+		if !compareToLastMetricFamily(metricFamilies) {
+			familyHeaders = generator.ExtractMetricFamilyHeaders(metricFamilies)
+			lastMetricFamily = metricFamilies
+		}
 	}
 
 	gvr := util.GVRFromType(resourceName, expectedType)

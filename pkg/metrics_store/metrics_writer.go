@@ -58,8 +58,16 @@ func (m MetricsWriter) WriteAll(w io.Writer) error {
 		}(s)
 	}
 
+	// If the first store has no headers, but has metrics, we need to write out
+	// an empty header to ensure that the metrics are written out correctly.
+	if m.stores[0].headers == nil && m.stores[0].metrics != nil {
+		m.stores[0].headers = []string{""}
+	}
 	for i, help := range m.stores[0].headers {
-		_, err := w.Write([]byte(help + "\n"))
+		if help != "" && help != "\n" {
+			help = help + "\n"
+		}
+		_, err := w.Write([]byte(help))
 		if err != nil {
 			return fmt.Errorf("failed to write help text: %v", err)
 		}

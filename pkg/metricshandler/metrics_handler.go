@@ -215,9 +215,12 @@ func (m *MetricsHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// If we send openmetrics, we need to include a EOF directive
+	// OpenMetrics spec requires that we end with an EOF directive.
 	if contentType == expfmt.FmtOpenMetrics_1_0_0 || contentType == expfmt.FmtOpenMetrics_0_0_1 {
-		writer.Write([]byte("# EOF\n"))
+		_, err := writer.Write([]byte("# EOF\n"))
+		if err != nil {
+			klog.ErrorS(err, "Failed to write EOF directive")
+		}
 	}
 
 	// In case we gzipped the response, we have to close the writer.
