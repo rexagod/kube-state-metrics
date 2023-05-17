@@ -75,7 +75,7 @@ func (g *FamilyGenerator) Generate(obj interface{}) *metric.Family {
 	family.Type = g.Type
 	// OpenMetrics spec requires that all Info metrics have a _info suffix.
 	if family.Type == metric.Info && !strings.HasSuffix(family.Name, "_info") {
-		family.Name = family.Name + "_info"
+		family.Name += "_info"
 	}
 	return family
 }

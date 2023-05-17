@@ -65,7 +65,7 @@ func (m MetricsWriter) WriteAll(w io.Writer) error {
 	}
 	for i, help := range m.stores[0].headers {
 		if help != "" && help != "\n" {
-			help = help + "\n"
+			help += "\n"
 		}
 		_, err := w.Write([]byte(help))
 		if err != nil {

@@ -148,7 +148,7 @@ func TestVariableVKsDiscoveryAndResolution(t *testing.T) {
 			return false, nil
 		}
 		// Note the "{" below. This is to ensure that the metric is not in a comment.
-		if strings.Contains(string(out), "kube_customresource_test_metric{") {
+		if strings.Contains(string(out), "kube_customresource_test_metric_info{") {
 			klog.InfoS("metrics available", "metric", string(out))
 			// Signal the process to exit, since we know the metrics are being generated as expected.
 			ch <- true
