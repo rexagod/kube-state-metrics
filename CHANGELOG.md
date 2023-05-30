@@ -2,6 +2,10 @@
 
 * [BUGFIX]      Only use OpenMetrics and Text in contentType #2024 @CatherineF-dev
 
+## 1.0.0 (2023-05-30)
+
+**Full Changelog**: https://github.com/rexagod/kube-state-metrics/compare/v0.5.0...v1.0.0
+
 ## v2.8.1 / 2023-02-22
 
 * [BUGFIX]      Don't crash on non-existent paths @rexagod #1998
