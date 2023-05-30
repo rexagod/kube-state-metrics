@@ -2,6 +2,38 @@
 
 * [BUGFIX]      Only use OpenMetrics and Text in contentType #2024 @CatherineF-dev
 
+## 1.0.0 (2023-05-30)
+
+
+### ⚠ BREAKING CHANGES
+
+* VPA is now supported only via Custom Resource Metrics
+
+### Features
+
+* Add local storage labels to kube_persistentvolume_info ([a6984e0](https://github.com/rexagod/kube-state-metrics/commit/a6984e00ef12f55a145f8a5373f4e53581dbf1ea))
+* **customresourcestate:** Support percentages ([d799f40](https://github.com/rexagod/kube-state-metrics/commit/d799f4038baae245901e3615008a13d49d3b2c1d))
+* **CustomResourceState:** Support quantities ([26950a4](https://github.com/rexagod/kube-state-metrics/commit/26950a49fc6cac84aec694b933dcf75758d9089f))
+* enable customresource metrics by configuration ([e0e4f14](https://github.com/rexagod/kube-state-metrics/commit/e0e4f144122932583297ebe9ac0e9beda86feba9))
+* **hpa:** status current target ([3eb7aa4](https://github.com/rexagod/kube-state-metrics/commit/3eb7aa445185336d3f4008eab2c99954c5510dd4))
+* **logging:** migrate to structured logging ([f406c1a](https://github.com/rexagod/kube-state-metrics/commit/f406c1aa1db6ecc65d4d420a01afdc361940f1ac))
+* Remove VerticalPodAutoscaler ([cef8c1f](https://github.com/rexagod/kube-state-metrics/commit/cef8c1fa4c3f9d7e3b4501e26496eeed8d36a6e1))
+* Use exporter-toolkit landingpage ([1529d94](https://github.com/rexagod/kube-state-metrics/commit/1529d94ec843e67feb143a58ad8c4dc2f01c5b0b))
+
+
+### Bug Fixes
+
+* **docs:** flag name ([fad7caf](https://github.com/rexagod/kube-state-metrics/commit/fad7caf05fbb2d565b96631fd38b59504ea46a42))
+* **hpa:** status current target ([6906e07](https://github.com/rexagod/kube-state-metrics/commit/6906e076456c4133d4a3962792b0352e43132979))
+* inconsistent test result by sorting ([fdd0931](https://github.com/rexagod/kube-state-metrics/commit/fdd09314c801c63a769367b6939dfcb942396f50))
+* public Builder compatibility with the BuilderInterface ([b06d352](https://github.com/rexagod/kube-state-metrics/commit/b06d352d050f25e4f65c050face2b77c18b923df))
+* public Builder compatibility with the BuilderInterface ([bcfef5a](https://github.com/rexagod/kube-state-metrics/commit/bcfef5a9cae4d9f1422f51dd2e88957d4bcb2ae0))
+* remove dots in flag names ([a9ec8a6](https://github.com/rexagod/kube-state-metrics/commit/a9ec8a620953db466775809053a9aa8de63fdaef))
+* **test/hpa:** values & labels wanted ([b26d663](https://github.com/rexagod/kube-state-metrics/commit/b26d66357ad096155de491bd33f3dfbea5c5457f))
+* typo ([9c90196](https://github.com/rexagod/kube-state-metrics/commit/9c90196261b7dc45fe7b5fb7bc5204d18b818309))
+* use a flag for the configuration file ([4b704fd](https://github.com/rexagod/kube-state-metrics/commit/4b704fd90e9c997689d00f0b367673ea32383650))
+* Use correct writer ([aebe410](https://github.com/rexagod/kube-state-metrics/commit/aebe4103f85a23d49a6be3583a74f9f6af5b49d0))
+
 ## v2.8.1 / 2023-02-22
 
 * [BUGFIX]      Don't crash on non-existent paths @rexagod #1998
