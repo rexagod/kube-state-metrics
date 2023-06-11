@@ -224,6 +224,26 @@ type compiledGauge struct {
 	labelFromKey string
 }
 
+func underscoresToIndices(extractedValueFrom string, it interface{}) interface{} {
+	// `it` is the search space.
+	_, isResolvable := it.(map[string]interface{})
+	if !isResolvable {
+		return nil
+	}
+	// `extractedValueFrom` is the search term.
+	// Split `extractedValueFrom` by underscores.
+	terms := strings.Split(extractedValueFrom, "_")
+	resolvedTerm := interface{}(terms[0])
+	for _, term := range terms[1:] {
+		t, ok := it.(map[string]interface{})[term]
+		if !ok {
+			return resolvedTerm
+		}
+		resolvedTerm = t
+	}
+	return resolvedTerm
+}
+
 func (c *compiledGauge) Values(v interface{}) (result []eachValue, errs []error) {
 	onError := func(err error) {
 		errs = append(errs, fmt.Errorf("%s: %v", c.Path(), err))
@@ -246,8 +266,17 @@ func (c *compiledGauge) Values(v interface{}) (result []eachValue, errs []error)
 				// "[...]" and not "[]".
 				len(sValueFrom) > 2 {
 				extractedValueFrom := sValueFrom[1 : len(sValueFrom)-1]
-				if key == extractedValueFrom {
-					gotFloat, err := toFloat64(it, c.NilIsZero)
+				if strings.HasPrefix(extractedValueFrom, key) {
+					var gotFloat float64
+					var err error
+					if strings.Contains(extractedValueFrom, "_") {
+						resolvedExtractedValueFrom := underscoresToIndices(extractedValueFrom, it)
+						if _, didResolveFullPath := resolvedExtractedValueFrom.(string); didResolveFullPath {
+							gotFloat, err = toFloat64(resolvedExtractedValueFrom, c.NilIsZero)
+						}
+					} else {
+						gotFloat, err = toFloat64(it, c.NilIsZero)
+					}
 					if err != nil {
 						onError(fmt.Errorf("[%s]: %w", key, err))
 						continue
@@ -760,10 +789,8 @@ func generate(u *unstructured.Unstructured, f compiledFamily, errLog klog.Verbos
 		fPaths := resolveWildcard(f.Each.Path(), u.Object)
 		for _, fPath := range fPaths {
 			f.Each.SetPath(fPath)
-			fn()
 		}
 	}
-
 	if f.Each.LabelFromPath() != nil {
 		labelsFromPath := make(map[string]valuePath)
 		flfp := f.Each.LabelFromPath()
@@ -777,8 +804,8 @@ func generate(u *unstructured.Unstructured, f compiledFamily, errLog klog.Verbos
 		if len(labelsFromPath) > 0 {
 			f.Each.SetLabelFromPath(labelsFromPath)
 		}
-		fn()
 	}
+	fn()
 
 	return &metric.Family{
 		Metrics: metrics,
