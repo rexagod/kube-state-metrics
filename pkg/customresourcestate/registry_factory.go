@@ -776,8 +776,8 @@ func generate(u *unstructured.Unstructured, f compiledFamily, errLog klog.Verbos
 		}
 		if len(labelsFromPath) > 0 {
 			f.Each.SetLabelFromPath(labelsFromPath)
-			fn()
 		}
+		fn()
 	}
 
 	return &metric.Family{
