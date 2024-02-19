@@ -43,10 +43,10 @@ licensecheck:
                exit 1; \
        fi
 
-lint: shellcheck licensecheck lint-markdown-format
+lint: shellcheck licensecheck lint-markdownfmt lint-markdown-format
 	golangci-lint run
 
-lint-fix: fix-markdown-format
+lint-fix: lint-markdownfmt-fix fix-markdown-format
 	golangci-lint run --fix -v
 	
 
@@ -83,6 +83,12 @@ shellcheck:
 
 lint-markdown-format:
 	${DOCKER_CLI} run -v "${PWD}:/workdir" davidanson/markdownlint-cli2:v${MARKDOWNLINT_CLI2_VERSION} --config .markdownlint-cli2.jsonc
+
+lint-markdownfmt:
+	markdownfmt -d -gofmt README.md
+
+lint-markdownfmt-fix:
+	markdownfmt -gofmt -w README.md
 
 fix-markdown-format:
 	${DOCKER_CLI} run -v "${PWD}:/workdir" davidanson/markdownlint-cli2:v${MARKDOWNLINT_CLI2_VERSION} --fix --config .markdownlint-cli2.jsonc
