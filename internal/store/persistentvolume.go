@@ -43,6 +43,9 @@ var (
 	descPersistentVolumeLabelsName          = "kube_persistentvolume_labels"
 	descPersistentVolumeLabelsHelp          = "Kubernetes labels converted to Prometheus labels."
 	descPersistentVolumeLabelsDefaultLabels = []string{"persistentvolume"}
+
+	descPersistentVolumeCSIAttributesName = "kube_persistentvolume_csi_attributes"
+	descPersistentVolumeCSIAttributesHelp = "CSI attributes of the Persistent Volume."
 )
 
 func persistentVolumeMetricFamilies(allowAnnotationsList, allowLabelsList []string) []generator.FamilyGenerator {
@@ -85,6 +88,9 @@ func persistentVolumeMetricFamilies(allowAnnotationsList, allowLabelsList []stri
 			basemetrics.ALPHA,
 			"",
 			wrapPersistentVolumeFunc(func(p *v1.PersistentVolume) *metric.Family {
+				if len(allowAnnotationsList) == 0 {
+					return &metric.Family{}
+				}
 				annotationKeys, annotationValues := createPrometheusLabelKeysValues("annotation", p.Annotations, allowAnnotationsList)
 				return &metric.Family{
 					Metrics: []*metric.Metric{
@@ -104,6 +110,9 @@ func persistentVolumeMetricFamilies(allowAnnotationsList, allowLabelsList []stri
 			basemetrics.STABLE,
 			"",
 			wrapPersistentVolumeFunc(func(p *v1.PersistentVolume) *metric.Family {
+				if len(allowLabelsList) == 0 {
+					return &metric.Family{}
+				}
 				labelKeys, labelValues := createPrometheusLabelKeysValues("label", p.Labels, allowLabelsList)
 				return &metric.Family{
 					Metrics: []*metric.Metric{
@@ -321,6 +330,68 @@ func persistentVolumeMetricFamilies(allowAnnotationsList, allowLabelsList []stri
 				}
 			}),
 		),
+		*generator.NewFamilyGeneratorWithStability(
+			"kube_persistentvolume_deletion_timestamp",
+			"Unix deletion timestamp",
+			metric.Gauge,
+			basemetrics.ALPHA,
+			"",
+			wrapPersistentVolumeFunc(func(p *v1.PersistentVolume) *metric.Family {
+				ms := []*metric.Metric{}
+
+				if p.DeletionTimestamp != nil && !p.DeletionTimestamp.IsZero() {
+					ms = append(ms, &metric.Metric{
+						LabelKeys:   []string{},
+						LabelValues: []string{},
+						Value:       float64(p.DeletionTimestamp.Unix()),
+					})
+				}
+
+				return &metric.Family{
+					Metrics: ms,
+				}
+			}),
+		),
+		*generator.NewOptInFamilyGenerator(
+			descPersistentVolumeCSIAttributesName,
+			descPersistentVolumeCSIAttributesHelp,
+			metric.Gauge,
+			basemetrics.ALPHA,
+			"",
+			wrapPersistentVolumeFunc(func(p *v1.PersistentVolume) *metric.Family {
+				if p.Spec.CSI == nil {
+					return &metric.Family{
+						Metrics: []*metric.Metric{},
+					}
+				}
+
+				var csiMounter, csiMapOptions string
+				for k, v := range p.Spec.PersistentVolumeSource.CSI.VolumeAttributes {
+					// storage attributes handled by external CEPH CSI driver
+					if k == "mapOptions" {
+						csiMapOptions = v
+					} else if k == "mounter" {
+						csiMounter = v
+					}
+				}
+
+				return &metric.Family{
+					Metrics: []*metric.Metric{
+						{
+							LabelKeys: []string{
+								"csi_mounter",
+								"csi_map_options",
+							},
+							LabelValues: []string{
+								csiMounter,
+								csiMapOptions,
+							},
+							Value: 1,
+						},
+					},
+				}
+			}),
+		),
 	}
 }
 
@@ -338,7 +409,7 @@ func wrapPersistentVolumeFunc(f func(*v1.PersistentVolume) *metric.Family) func(
 	}
 }
 
-func createPersistentVolumeListWatch(kubeClient clientset.Interface, ns string, fieldSelector string) cache.ListerWatcher {
+func createPersistentVolumeListWatch(kubeClient clientset.Interface, _ string, _ string) cache.ListerWatcher {
 	return &cache.ListWatch{
 		ListFunc: func(opts metav1.ListOptions) (runtime.Object, error) {
 			return kubeClient.CoreV1().PersistentVolumes().List(context.TODO(), opts)

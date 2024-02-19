@@ -1,6 +1,6 @@
 # Custom Resource State Metrics
 
-This section describes how to add metrics based on the state of a custom resource without writing a custom resource 
+This section describes how to add metrics based on the state of a custom resource without writing a custom resource
 registry and running your own build of KSM.
 
 ## Configuration
@@ -15,8 +15,6 @@ Two flags can be used:
 If both flags are provided, the inline configuration will take precedence.
 When multiple entries for the same resource exist, kube-state-metrics will exit with an error.
 This includes configuration which refers to a different API version.
-
-In addition to specifying one of `--custom-resource-state-config*` flags, you should also add the custom resource *Kind*s in plural form to the list of exposed resources in the `--resources` flag. If you don't specify `--resources`, then all known custom resources configured in `--custom-resource-state-config*` and all available default kubernetes objects will be taken into account by kube-state-metrics.
 
 ```yaml
 apiVersion: apps/v1
@@ -46,7 +44,6 @@ spec:
                         each:
                           type: Gauge
                           ...
-          - --resources=certificatesigningrequests,configmaps,cronjobs,daemonsets,deployments,endpoints,foos,horizontalpodautoscalers,ingresses,jobs,limitranges,mutatingwebhookconfigurations,namespaces,networkpolicies,nodes,persistentvolumeclaims,persistentvolumes,poddisruptionbudgets,pods,replicasets,replicationcontrollers,resourcequotas,secrets,services,statefulsets,storageclasses,validatingwebhookconfigurations,volumeattachments
 ```
 
 It's also possible to configure kube-state-metrics to run in a `custom-resource-mode` only. In addition to specifying one of `--custom-resource-state-config*` flags, you could set `--custom-resource-state-only` to `true`.
@@ -85,6 +82,10 @@ spec:
 
 NOTE: The `customresource_group`, `customresource_version`, and `customresource_kind` common labels are reserved, and will be overwritten by the values from the `groupVersionKind` field.
 
+### RBAC-enabled Clusters
+
+Please be aware that kube-state-metrics needs list and watch permissions granted to `customresourcedefinitions.apiextensions.k8s.io` as well as to the resources you want to gather metrics from.
+
 ### Examples
 
 The examples in this section will use the following custom resource:
@@ -107,6 +108,10 @@ spec:
         - id: 3
           value: false
     replicas: 1
+    refs:
+        - my_other_foo
+        - foo_2
+        - foo_with_extensions
 status:
     phase: Pending
     active:
@@ -207,6 +212,42 @@ kube_customresource_ready_count{customresource_group="myteam.io", customresource
 kube_customresource_ready_count{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1", active="3",custom_metric="yes",foo="bar",name="foo",bar="baz",qux="quxx",type="type-b"} 4
 ```
 
+#### Non-map Arrays
+
+```yaml
+kind: CustomResourceStateMetrics
+spec:
+  resources:
+    - groupVersionKind:
+        group: myteam.io
+        kind: "Foo"
+        version: "v1"
+      labelsFromPath:
+        name: [metadata, name]
+      metrics:
+        - name: "ref_info"
+          help: "Reference to other Foo"
+          each:
+            type: Info
+            info:
+              # targeting an array will produce a metric for each element
+              # labelsFromPath and value are relative to this path
+              path: [spec, refs]
+
+              # if path targets a list of values (e.g. strings or numbers, not objects or maps), individual values can
+              # referenced by a label using this syntax
+              labelsFromPath:
+                ref: []
+```
+
+Produces the following metrics:
+
+```prometheus
+kube_customresource_ref_info{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1", name="foo",ref="my_other_foo"} 1
+kube_customresource_ref_info{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1", name="foo",ref="foo_2"} 1
+kube_customresource_ref_info{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1", name="foo",ref="foo_with_extensions"} 1
+```
+
 #### VerticalPodAutoscaler
 
 In v2.9.0 the `vericalpodautoscalers` resource was removed from the list of default resources. In order to generate metrics for `verticalpodautoscalers`, you can use the following Custom Resource State config:
@@ -244,7 +285,6 @@ spec:
 ```
 
 The above configuration was tested on [this](https://github.com/kubernetes/autoscaler/blob/master/vertical-pod-autoscaler/examples/hamster.yaml) VPA configuration, with an added annotation (`foo: 123`).
-
 
 ### Metric types
 
@@ -293,9 +333,9 @@ Supported types are:
 * for string the following logic applies
   * `"true"` and `"yes"` are mapped to `1.0` and `"false"` and `"no"` are mapped to `0.0` (all case-insensitive)
   * RFC3339 times are parsed to float timestamp  
-  * Quantities like "250m" or "512Gi" are parsed to float using https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go
+  * Quantities like "250m" or "512Gi" are parsed to float using <https://github.com/kubernetes/apimachinery/blob/master/pkg/api/resource/quantity.go>
   * Percentages ending with a "%" are parsed to float
-  * finally the string is parsed to float using https://pkg.go.dev/strconv#ParseFloat which should support all common number formats. If that fails an error is yielded
+  * finally the string is parsed to float using <https://pkg.go.dev/strconv#ParseFloat> which should support all common number formats. If that fails an error is yielded
 
 ##### Example for status conditions on Kubernetes Controllers
 
@@ -326,7 +366,7 @@ spec:
           valueFrom: ["status"]
 ```
 
-This will work for kubernetes controller CRs which expose status conditions according to the kubernetes api (https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Condition):
+This will work for kubernetes controller CRs which expose status conditions according to the kubernetes api (<https://pkg.go.dev/k8s.io/apimachinery/pkg/apis/meta/v1#Condition>):
 
 ```yaml
 status:
@@ -420,6 +460,7 @@ spec:
 ```
 
 Produces:
+
 ```prometheus
 myteam_foos_uptime{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1"} 43.21
 ```
@@ -438,6 +479,7 @@ spec:
 ```
 
 Produces:
+
 ```prometheus
 uptime{customresource_group="myteam.io", customresource_kind="Foo", customresource_version="v1"} 43.21
 ```
@@ -480,6 +522,9 @@ Examples:
 
 # if the value to be matched is a number or boolean, the value is compared as a number or boolean  
 [status, conditions, "[value=66]", name]  # status.conditions[1].name = "b"
+
+# For generally matching against a field in an object schema, use the following syntax:
+[metadata, "name=foo"] # if v, ok := metadata[name]; ok && v == "foo" { return v; } else { /* ignore */ }
 ```
 
 ### Wildcard matching of version and kind fields
@@ -517,5 +562,5 @@ kube_customresource_myobject_info{customresource_group="myteam.io",customresourc
 
 #### Note
 
-- For cases where the GVKs defined in a CRD have multiple versions under a single group for the same kind, as expected, the wildcard value will resolve to *all* versions, but a query for any specific version will return all resources under all versions, in that versions' representation. This basically means that for two such versions `A` and `B`,  if a resource exists under `B`, it will reflect in the metrics generated for `A` as well, in addition to any resources of itself, and vice-versa. This logic is based on the [current `list`ing behavior](https://github.com/kubernetes/client-go/issues/1251#issuecomment-1544083071) of the client-go library.
-- The introduction of this feature further discourages (and discontinues) the use of native objects in the CRS featureset, since these do not have an explicit CRD associated with them, and conflict with internal stores defined specifically for such native resources. Please consider opening an issue or raising a PR if you'd like to expand on the current metric labelsets for them. Also, any such configuration will be ignored, and no metrics will be generated for the same.
+* For cases where the GVKs defined in a CRD have multiple versions under a single group for the same kind, as expected, the wildcard value will resolve to *all* versions, but a query for any specific version will return all resources under all versions, in that versions' representation. This basically means that for two such versions `A` and `B`,  if a resource exists under `B`, it will reflect in the metrics generated for `A` as well, in addition to any resources of itself, and vice-versa. This logic is based on the [current `list`ing behavior](https://github.com/kubernetes/client-go/issues/1251#issuecomment-1544083071) of the client-go library.
+* The introduction of this feature further discourages (and discontinues) the use of native objects in the CRS featureset, since these do not have an explicit CRD associated with them, and conflict with internal stores defined specifically for such native resources. Please consider opening an issue or raising a PR if you'd like to expand on the current metric labelsets for them. Also, any such configuration will be ignored, and no metrics will be generated for the same.

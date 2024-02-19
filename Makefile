@@ -4,7 +4,7 @@ REGISTRY ?= gcr.io/k8s-staging-kube-state-metrics
 TAG_PREFIX = v
 VERSION = $(shell cat VERSION)
 TAG ?= $(TAG_PREFIX)$(VERSION)
-LATEST_RELEASE_BRANCH := release-$(shell grep -ohE "[0-9]+.[0-9]+" VERSION)
+LATEST_RELEASE_BRANCH ?= release-$(shell grep -ohE "[0-9]+.[0-9]+" VERSION)
 BRANCH = $(strip $(shell git rev-parse --abbrev-ref HEAD))
 DOCKER_CLI ?= docker
 PROMTOOL_CLI ?= promtool
@@ -15,12 +15,14 @@ GIT_COMMIT ?= $(shell git rev-parse --short HEAD)
 OS ?= $(shell uname -s | tr A-Z a-z)
 ALL_ARCH = amd64 arm arm64 ppc64le s390x
 PKG = github.com/prometheus/common
-PROMETHEUS_VERSION = 2.44.0
-GO_VERSION = 1.20.4
+PROMETHEUS_VERSION = 2.46.0
+GO_VERSION = 1.21.1
 IMAGE = $(REGISTRY)/kube-state-metrics
 MULTI_ARCH_IMG = $(IMAGE)-$(ARCH)
 USER ?= $(shell id -u -n)
 HOST ?= $(shell hostname)
+MARKDOWNLINT_CLI2_VERSION = 0.9.2
+
 
 export DOCKER_CLI_EXPERIMENTAL=enabled
 
@@ -41,11 +43,12 @@ licensecheck:
                exit 1; \
        fi
 
-lint: shellcheck licensecheck
+lint: shellcheck licensecheck lint-markdownfmt lint-markdown-format
 	golangci-lint run
 
-lint-fix:
+lint-fix: lint-markdownfmt-fix fix-markdown-format
 	golangci-lint run --fix -v
+	
 
 doccheck: generate
 	@echo "- Checking if the generated documentation is up to date..."
@@ -77,6 +80,18 @@ test-rules:
 
 shellcheck:
 	${DOCKER_CLI} run -v "${PWD}:/mnt" koalaman/shellcheck:stable $(shell find . -type f -name "*.sh" -not -path "*vendor*")
+
+lint-markdown-format:
+	${DOCKER_CLI} run -v "${PWD}:/workdir" davidanson/markdownlint-cli2:v${MARKDOWNLINT_CLI2_VERSION} --config .markdownlint-cli2.jsonc
+
+lint-markdownfmt:
+	markdownfmt -d -gofmt README.md
+
+lint-markdownfmt-fix:
+	markdownfmt -gofmt -w README.md
+
+fix-markdown-format:
+	${DOCKER_CLI} run -v "${PWD}:/workdir" davidanson/markdownlint-cli2:v${MARKDOWNLINT_CLI2_VERSION} --fix --config .markdownlint-cli2.jsonc
 
 # Runs benchmark tests on the current git ref and the last release and compares
 # the two.
