@@ -1,3 +1,7 @@
+## v2.12.0 / 2024-02-19
+
+76d42356: Pranshu Srivastava <rexagod@gmail.com>: chore: automate release workflow
+
 ## v2.10.0 / 2023-08-31
 
 ### Note
