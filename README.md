@@ -48,11 +48,11 @@ At most, 5 kube-state-metrics and 5 [kubernetes releases](https://github.com/kub
 
 | kube-state-metrics | Kubernetes client-go Version |
 |--------------------|:----------------------------:|
-| **v2.6.0**         |            v1.24             |
 | **v2.7.0**         |            v1.25             |
 | **v2.8.2**         |            v1.26             |
 | **v2.9.2**         |            v1.26             |
 | **v2.10.1**        |            v1.27             |
+| **v2.11.0** | v1.28 |
 | **main**           |            v1.28             |
 
 #### Resource group version compatibility
