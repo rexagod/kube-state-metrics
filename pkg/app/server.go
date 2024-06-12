@@ -39,6 +39,7 @@ import (
 	"github.com/prometheus/common/version"
 	"github.com/prometheus/exporter-toolkit/web"
 	"gopkg.in/yaml.v3"
+	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth" // Initialize common client auth plugins.
 	"k8s.io/client-go/tools/clientcmd"
 	"k8s.io/klog/v2"
@@ -59,6 +60,7 @@ import (
 const (
 	metricsPath = "/metrics"
 	healthzPath = "/healthz"
+	livezPath   = "/livez"
 )
 
 // promLogger implements promhttp.Logger
@@ -321,7 +323,7 @@ func RunKubeStateMetrics(ctx context.Context, opts *options.Options) error {
 		WebConfigFile:      &tlsConfig,
 	}
 
-	metricsMux := buildMetricsServer(m, durationVec)
+	metricsMux := buildMetricsServer(m, durationVec, kubeClient)
 	metricsServerListenAddress := net.JoinHostPort(opts.Host, strconv.Itoa(opts.Port))
 	metricsServer := http.Server{
 		Handler:           metricsMux,
@@ -390,7 +392,7 @@ func buildTelemetryServer(registry prometheus.Gatherer) *http.ServeMux {
 	return mux
 }
 
-func buildMetricsServer(m *metricshandler.MetricsHandler, durationObserver prometheus.ObserverVec) *http.ServeMux {
+func buildMetricsServer(m *metricshandler.MetricsHandler, durationObserver prometheus.ObserverVec, client kubernetes.Interface) *http.ServeMux {
 	mux := http.NewServeMux()
 
 	// TODO: This doesn't belong into serveMetrics
@@ -400,7 +402,22 @@ func buildMetricsServer(m *metricshandler.MetricsHandler, durationObserver prome
 	mux.Handle("/debug/pprof/symbol", http.HandlerFunc(pprof.Symbol))
 	mux.Handle("/debug/pprof/trace", http.HandlerFunc(pprof.Trace))
 
+	// Add metricsPath
 	mux.Handle(metricsPath, promhttp.InstrumentHandlerDuration(durationObserver, m))
+
+	// Add livezPath
+	mux.Handle(livezPath, http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+
+		// Query the Kube API to make sure we are not affected by a network outage.
+		got := client.CoreV1().RESTClient().Get().AbsPath("/apis/").Do(context.Background())
+		if got.Error() != nil {
+			w.WriteHeader(http.StatusServiceUnavailable)
+			w.Write([]byte(http.StatusText(http.StatusServiceUnavailable)))
+			return
+		}
+		w.WriteHeader(http.StatusOK)
+		w.Write([]byte(http.StatusText(http.StatusOK)))
+	}))
 
 	// Add healthzPath
 	mux.HandleFunc(healthzPath, func(w http.ResponseWriter, _ *http.Request) {
@@ -421,6 +438,10 @@ func buildMetricsServer(m *metricshandler.MetricsHandler, durationObserver prome
 			{
 				Address: healthzPath,
 				Text:    "Healthz",
+			},
+			{
+				Address: livezPath,
+				Text:    "Livez",
 			},
 		},
 	}
